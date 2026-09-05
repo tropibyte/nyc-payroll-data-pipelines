@@ -113,21 +113,44 @@ def write(folder, name, obj):
 # --------------------------------------------------------------------------
 # linked services
 # --------------------------------------------------------------------------
-def linked_services():
-    # Managed-identity auth: no secret in git.  Requires the Data Factory's
-    # managed identity to have "Storage Blob Data Contributor" on the storage
-    # account.  If the lab blocks role assignment, open this linked service in
-    # the portal and switch Authentication type to "Account key".
-    write("linkedService", LS_ADLS, {
-        "name": LS_ADLS,
-        "properties": {
-            "annotations": [],
-            "type": "AzureBlobFS",
-            "typeProperties": {
-                "url": f"https://{ACCOUNT}.dfs.core.windows.net"
-            }
+def adls_linked_service(auth):
+    """Two interchangeable shapes for the same connection.
+
+    managedIdentity  no secret anywhere, but the factory's managed identity
+                     needs "Storage Blob Data Contributor" on the storage
+                     account -- a role assignment some lab tenants block.
+    accountKey       always works, but the key is a secret: it is written as
+                     an empty SecureString here and typed into the portal.
+    """
+    props = {
+        "annotations": [],
+        "type": "AzureBlobFS",
+        "typeProperties": {"url": f"https://{ACCOUNT}.dfs.core.windows.net"}
+    }
+    if auth == "accountKey":
+        props["typeProperties"]["accountKey"] = {
+            "type": "SecureString",
+            "value": "PASTE-THE-STORAGE-ACCOUNT-KEY-IN-THE-PORTAL"
         }
-    })
+    return {"name": LS_ADLS, "properties": props}
+
+
+def linked_services():
+    primary = CFG.get("adlsAuth", "managedIdentity")
+    if primary not in ("managedIdentity", "accountKey"):
+        raise SystemExit(f"adlsAuth must be managedIdentity or accountKey, got {primary!r}")
+    alternate = "accountKey" if primary == "managedIdentity" else "managedIdentity"
+
+    write("linkedService", LS_ADLS, adls_linked_service(primary))
+
+    # The other form, parked outside the ADF root folder so the studio ignores
+    # it.  To swap: copy it over adf/linkedService/ls_adls_nycpayroll.json, or
+    # flip "adlsAuth" in config/project.json and re-run this script.
+    d = ROOT / "adf-optional" / "linkedService"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / f"{LS_ADLS}.{alternate}.json").write_text(
+        json.dumps(adls_linked_service(alternate), indent=4) + "\n", encoding="utf-8"
+    )
 
     # The connectionString form IS the "Legacy" version of the Azure SQL linked
     # service.  The current/recommended version (discrete server / database /

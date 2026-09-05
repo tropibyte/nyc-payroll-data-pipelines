@@ -125,8 +125,13 @@ Azure SQL linked service breaks mapping data flows with
 identity, so no secret lives in Git. Grant it access:
 *Storage account → Access control (IAM) → Add role assignment → **Storage Blob
 Data Contributor** → Managed identity → Data factory → your factory*.
-If the lab blocks role assignment, open the linked service and switch
-Authentication type to **Account key** instead.
+
+If the lab tenant blocks role assignment, use the account-key form instead —
+`build_adf.py` always writes the unused variant to
+`adf-optional/linkedService/ls_adls_nycpayroll.accountKey.json`. Either copy it
+over `adf/linkedService/ls_adls_nycpayroll.json`, or set `"adlsAuth":
+"accountKey"` in `config/project.json` and re-run the generator. Then paste the
+key from *Storage account → Access keys* into the portal.
 
 Then **Test connection** on both, and **Publish**.
 

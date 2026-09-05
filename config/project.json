@@ -25,6 +25,9 @@
   "storageAccount": "adlsnycpayrolltarien",
   "storageContainer": "adlsnycpayroll-tarie-n",
 
+  "_adlsAuth": "managedIdentity keeps every secret out of git but needs a role assignment on the storage account; accountKey always works but you paste the key into the portal. Either way build_adf.py writes the other form to adf-optional/linkedService/ so you can swap in seconds.",
+  "adlsAuth": "managedIdentity",
+
   "sqlServer": "sql-nycpayroll-tarie-n",
   "sqlDatabase": "db_nycpayroll",
   "sqlUser": "nycadmin",
