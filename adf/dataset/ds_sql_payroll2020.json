@@ -1,0 +1,93 @@
+{
+    "name": "ds_sql_payroll2020",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "ls_sqldb_nycpayroll",
+            "type": "LinkedServiceReference"
+        },
+        "annotations": [],
+        "type": "AzureSqlTable",
+        "schema": [
+            {
+                "name": "FiscalYear",
+                "type": "int"
+            },
+            {
+                "name": "PayrollNumber",
+                "type": "int"
+            },
+            {
+                "name": "AgencyID",
+                "type": "varchar"
+            },
+            {
+                "name": "AgencyName",
+                "type": "varchar"
+            },
+            {
+                "name": "EmployeeID",
+                "type": "varchar"
+            },
+            {
+                "name": "LastName",
+                "type": "varchar"
+            },
+            {
+                "name": "FirstName",
+                "type": "varchar"
+            },
+            {
+                "name": "AgencyStartDate",
+                "type": "date"
+            },
+            {
+                "name": "WorkLocationBorough",
+                "type": "varchar"
+            },
+            {
+                "name": "TitleCode",
+                "type": "varchar"
+            },
+            {
+                "name": "TitleDescription",
+                "type": "varchar"
+            },
+            {
+                "name": "LeaveStatusasofJune30",
+                "type": "varchar"
+            },
+            {
+                "name": "BaseSalary",
+                "type": "float"
+            },
+            {
+                "name": "PayBasis",
+                "type": "varchar"
+            },
+            {
+                "name": "RegularHours",
+                "type": "float"
+            },
+            {
+                "name": "RegularGrossPaid",
+                "type": "float"
+            },
+            {
+                "name": "OTHours",
+                "type": "float"
+            },
+            {
+                "name": "TotalOTPaid",
+                "type": "float"
+            },
+            {
+                "name": "TotalOtherPay",
+                "type": "float"
+            }
+        ],
+        "typeProperties": {
+            "schema": "dbo",
+            "table": "NYC_Payroll_Data_2020"
+        }
+    }
+}

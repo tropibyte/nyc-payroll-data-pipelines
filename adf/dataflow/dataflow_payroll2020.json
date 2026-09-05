@@ -1,0 +1,78 @@
+{
+    "name": "dataflow_payroll2020",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "dataset": {
+                        "referenceName": "ds_adls_payroll2020",
+                        "type": "DatasetReference"
+                    },
+                    "name": "srcPayroll2020File"
+                }
+            ],
+            "sinks": [
+                {
+                    "dataset": {
+                        "referenceName": "ds_sql_payroll2020",
+                        "type": "DatasetReference"
+                    },
+                    "name": "sinkPayroll2020Table"
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "castPayroll2020"
+                }
+            ],
+            "scriptLines": [
+                "source(output(",
+                "\t\tFiscalYear as string,",
+                "\t\tPayrollNumber as string,",
+                "\t\tAgencyID as string,",
+                "\t\tAgencyName as string,",
+                "\t\tEmployeeID as string,",
+                "\t\tLastName as string,",
+                "\t\tFirstName as string,",
+                "\t\tAgencyStartDate as string,",
+                "\t\tWorkLocationBorough as string,",
+                "\t\tTitleCode as string,",
+                "\t\tTitleDescription as string,",
+                "\t\tLeaveStatusasofJune30 as string,",
+                "\t\tBaseSalary as string,",
+                "\t\tPayBasis as string,",
+                "\t\tRegularHours as string,",
+                "\t\tRegularGrossPaid as string,",
+                "\t\tOTHours as string,",
+                "\t\tTotalOTPaid as string,",
+                "\t\tTotalOtherPay as string",
+                "\t),",
+                "\tallowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tignoreNoFilesFound: false) ~> srcPayroll2020File",
+                "srcPayroll2020File derive(",
+                "\t\tFiscalYear = toInteger(FiscalYear),",
+                "\t\tPayrollNumber = toInteger(PayrollNumber),",
+                "\t\tAgencyStartDate = toDate(AgencyStartDate, 'M/d/yyyy'),",
+                "\t\tBaseSalary = toFloat(BaseSalary),",
+                "\t\tRegularHours = toFloat(RegularHours),",
+                "\t\tRegularGrossPaid = toFloat(RegularGrossPaid),",
+                "\t\tOTHours = toFloat(OTHours),",
+                "\t\tTotalOTPaid = toFloat(TotalOTPaid),",
+                "\t\tTotalOtherPay = toFloat(TotalOtherPay)) ~> castPayroll2020",
+                "castPayroll2020 sink(allowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tdeletable:false,",
+                "\tinsertable:true,",
+                "\tupdateable:false,",
+                "\tupsertable:false,",
+                "\ttruncate:true,",
+                "\tformat: 'table',",
+                "\tskipDuplicateMapInputs: true,",
+                "\tskipDuplicateMapOutputs: true,",
+                "\terrorHandlingOption: 'stopOnFirstError') ~> sinkPayroll2020Table"
+            ]
+        }
+    }
+}

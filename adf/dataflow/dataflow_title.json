@@ -1,0 +1,47 @@
+{
+    "name": "dataflow_title",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "dataset": {
+                        "referenceName": "ds_adls_title",
+                        "type": "DatasetReference"
+                    },
+                    "name": "srcTitleFile"
+                }
+            ],
+            "sinks": [
+                {
+                    "dataset": {
+                        "referenceName": "ds_sql_title",
+                        "type": "DatasetReference"
+                    },
+                    "name": "sinkTitleTable"
+                }
+            ],
+            "transformations": [],
+            "scriptLines": [
+                "source(output(",
+                "\t\tTitleCode as string,",
+                "\t\tTitleDescription as string",
+                "\t),",
+                "\tallowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tignoreNoFilesFound: false) ~> srcTitleFile",
+                "srcTitleFile sink(allowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tdeletable:false,",
+                "\tinsertable:true,",
+                "\tupdateable:false,",
+                "\tupsertable:false,",
+                "\ttruncate:true,",
+                "\tformat: 'table',",
+                "\tskipDuplicateMapInputs: true,",
+                "\tskipDuplicateMapOutputs: true,",
+                "\terrorHandlingOption: 'stopOnFirstError') ~> sinkTitleTable"
+            ]
+        }
+    }
+}

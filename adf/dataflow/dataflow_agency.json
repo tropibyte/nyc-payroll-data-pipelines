@@ -1,0 +1,47 @@
+{
+    "name": "dataflow_agency",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "dataset": {
+                        "referenceName": "ds_adls_agency",
+                        "type": "DatasetReference"
+                    },
+                    "name": "srcAgencyFile"
+                }
+            ],
+            "sinks": [
+                {
+                    "dataset": {
+                        "referenceName": "ds_sql_agency",
+                        "type": "DatasetReference"
+                    },
+                    "name": "sinkAgencyTable"
+                }
+            ],
+            "transformations": [],
+            "scriptLines": [
+                "source(output(",
+                "\t\tAgencyID as string,",
+                "\t\tAgencyName as string",
+                "\t),",
+                "\tallowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tignoreNoFilesFound: false) ~> srcAgencyFile",
+                "srcAgencyFile sink(allowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tdeletable:false,",
+                "\tinsertable:true,",
+                "\tupdateable:false,",
+                "\tupsertable:false,",
+                "\ttruncate:true,",
+                "\tformat: 'table',",
+                "\tskipDuplicateMapInputs: true,",
+                "\tskipDuplicateMapOutputs: true,",
+                "\terrorHandlingOption: 'stopOnFirstError') ~> sinkAgencyTable"
+            ]
+        }
+    }
+}

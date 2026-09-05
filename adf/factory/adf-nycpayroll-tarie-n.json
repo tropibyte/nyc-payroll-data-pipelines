@@ -1,0 +1,11 @@
+{
+    "name": "adf-nycpayroll-tarie-n",
+    "properties": {
+        "globalParameters": {
+            "dataflow_param_fiscalyear": {
+                "type": "Int",
+                "value": 2020
+            }
+        }
+    }
+}

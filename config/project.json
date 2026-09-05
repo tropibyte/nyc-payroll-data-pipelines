@@ -1,0 +1,32 @@
+{
+  "_comment": [
+    "Fill these in with the names you actually create in the Azure portal, then run:",
+    "    python scripts/render_adf.py",
+    "which renders adf-templates/ -> adf/ and sql/ -> sql/rendered/.",
+    "",
+    "storageAccount: Azure Storage account names allow ONLY lowercase letters and",
+    "digits, 3-24 chars -- so the project's 'adlsnycpayroll-firstname-lastinitial'",
+    "convention cannot be used verbatim for the account.  Use the hyphenated form",
+    "for the CONTAINER (blob container names do allow hyphens) and the squashed",
+    "form for the account.  That satisfies both the naming ask and Azure's rules.",
+    "",
+    "NOTHING SECRET GOES IN THIS FILE.  The SQL password is typed into the ADF",
+    "linked service in the portal and never leaves the Data Factory service."
+  ],
+
+  "factoryName": "adf-nycpayroll-tarie-n",
+  "resourceGroup": "CHANGE-ME-lab-provided-resource-group",
+  "location": "eastus",
+
+  "storageAccount": "adlsnycpayrolltarien",
+  "storageContainer": "adlsnycpayroll-tarie-n",
+
+  "sqlServer": "sql-nycpayroll-tarie-n",
+  "sqlDatabase": "db_nycpayroll",
+  "sqlUser": "nycadmin",
+
+  "synapseWorkspace": "syn-nycpayroll-tarie-n",
+  "synapseDatabase": "udacity",
+
+  "fiscalYearParam": 2020
+}

@@ -1,0 +1,15 @@
+# Never commit lab or database credentials
+*.secret
+*.env
+config/local.*
+**/credentials*.json
+
+__pycache__/
+*.pyc
+
+# ADF publish branch artifacts, if you ever generate them locally
+adf_publish/
+
+Thumbs.db
+desktop.ini
+.DS_Store

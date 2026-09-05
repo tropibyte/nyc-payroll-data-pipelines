@@ -1,0 +1,168 @@
+{
+    "name": "dataflow_summary",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "dataset": {
+                        "referenceName": "ds_sql_payroll2020",
+                        "type": "DatasetReference"
+                    },
+                    "name": "srcSql2020"
+                },
+                {
+                    "dataset": {
+                        "referenceName": "ds_sql_payroll2021",
+                        "type": "DatasetReference"
+                    },
+                    "name": "srcSql2021"
+                }
+            ],
+            "sinks": [
+                {
+                    "dataset": {
+                        "referenceName": "ds_sql_summary",
+                        "type": "DatasetReference"
+                    },
+                    "name": "sinkSummaryTable"
+                },
+                {
+                    "dataset": {
+                        "referenceName": "ds_adls_staging",
+                        "type": "DatasetReference"
+                    },
+                    "name": "sinkSummaryStaging"
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "sel2020"
+                },
+                {
+                    "name": "sel2021"
+                },
+                {
+                    "name": "unionPayroll"
+                },
+                {
+                    "name": "filterFiscalYear"
+                },
+                {
+                    "name": "deriveTotalPaid"
+                },
+                {
+                    "name": "aggTotalPaid"
+                },
+                {
+                    "name": "selSummary"
+                }
+            ],
+            "scriptLines": [
+                "parameters{",
+                "\tdataflow_param_fiscalyear as integer (2020)",
+                "}",
+                "source(output(",
+                "\t\tFiscalYear as integer,",
+                "\t\tPayrollNumber as integer,",
+                "\t\tAgencyID as string,",
+                "\t\tAgencyName as string,",
+                "\t\tEmployeeID as string,",
+                "\t\tLastName as string,",
+                "\t\tFirstName as string,",
+                "\t\tAgencyStartDate as date,",
+                "\t\tWorkLocationBorough as string,",
+                "\t\tTitleCode as string,",
+                "\t\tTitleDescription as string,",
+                "\t\tLeaveStatusasofJune30 as string,",
+                "\t\tBaseSalary as double,",
+                "\t\tPayBasis as string,",
+                "\t\tRegularHours as double,",
+                "\t\tRegularGrossPaid as double,",
+                "\t\tOTHours as double,",
+                "\t\tTotalOTPaid as double,",
+                "\t\tTotalOtherPay as double",
+                "\t),",
+                "\tallowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tisolationLevel: 'READ_UNCOMMITTED',",
+                "\tformat: 'table') ~> srcSql2020",
+                "source(output(",
+                "\t\tFiscalYear as integer,",
+                "\t\tPayrollNumber as integer,",
+                "\t\tAgencyCode as string,",
+                "\t\tAgencyName as string,",
+                "\t\tEmployeeID as string,",
+                "\t\tLastName as string,",
+                "\t\tFirstName as string,",
+                "\t\tAgencyStartDate as date,",
+                "\t\tWorkLocationBorough as string,",
+                "\t\tTitleCode as string,",
+                "\t\tTitleDescription as string,",
+                "\t\tLeaveStatusasofJune30 as string,",
+                "\t\tBaseSalary as double,",
+                "\t\tPayBasis as string,",
+                "\t\tRegularHours as double,",
+                "\t\tRegularGrossPaid as double,",
+                "\t\tOTHours as double,",
+                "\t\tTotalOTPaid as double,",
+                "\t\tTotalOtherPay as double",
+                "\t),",
+                "\tallowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tisolationLevel: 'READ_UNCOMMITTED',",
+                "\tformat: 'table') ~> srcSql2021",
+                "srcSql2020 select(mapColumn(",
+                "\t\tFiscalYear,",
+                "\t\tAgencyName,",
+                "\t\tRegularGrossPaid,",
+                "\t\tTotalOTPaid,",
+                "\t\tTotalOtherPay",
+                "\t),",
+                "\tskipDuplicateMapInputs: true,",
+                "\tskipDuplicateMapOutputs: true) ~> sel2020",
+                "srcSql2021 select(mapColumn(",
+                "\t\tFiscalYear,",
+                "\t\tAgencyName,",
+                "\t\tRegularGrossPaid,",
+                "\t\tTotalOTPaid,",
+                "\t\tTotalOtherPay",
+                "\t),",
+                "\tskipDuplicateMapInputs: true,",
+                "\tskipDuplicateMapOutputs: true) ~> sel2021",
+                "sel2020, sel2021 union(byName: true)~> unionPayroll",
+                "unionPayroll filter(toInteger(FiscalYear) >= $dataflow_param_fiscalyear) ~> filterFiscalYear",
+                "filterFiscalYear derive(TotalPaid = RegularGrossPaid + TotalOTPaid + TotalOtherPay) ~> deriveTotalPaid",
+                "deriveTotalPaid aggregate(groupBy(FiscalYear,",
+                "\t\tAgencyName),",
+                "\tTotalPaid = sum(TotalPaid)) ~> aggTotalPaid",
+                "aggTotalPaid select(mapColumn(",
+                "\t\tFiscalYear,",
+                "\t\tAgencyName,",
+                "\t\tTotalPaid",
+                "\t),",
+                "\tskipDuplicateMapInputs: true,",
+                "\tskipDuplicateMapOutputs: true) ~> selSummary",
+                "selSummary sink(allowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tdeletable:false,",
+                "\tinsertable:true,",
+                "\tupdateable:false,",
+                "\tupsertable:false,",
+                "\ttruncate:true,",
+                "\tformat: 'table',",
+                "\tskipDuplicateMapInputs: true,",
+                "\tskipDuplicateMapOutputs: true,",
+                "\terrorHandlingOption: 'stopOnFirstError') ~> sinkSummaryTable",
+                "selSummary sink(allowSchemaDrift: true,",
+                "\tvalidateSchema: false,",
+                "\tumask: 0022,",
+                "\tpreCommands: [],",
+                "\tpostCommands: [],",
+                "\ttruncate: true,",
+                "\tskipDuplicateMapInputs: true,",
+                "\tskipDuplicateMapOutputs: true) ~> sinkSummaryStaging"
+            ]
+        }
+    }
+}
