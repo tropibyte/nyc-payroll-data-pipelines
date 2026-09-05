@@ -19,7 +19,7 @@
   ],
 
   "factoryName": "adf-nycpayroll-tarie-n",
-  "resourceGroup": "CHANGE-ME-lab-provided-resource-group",
+  "resourceGroup": "ODL-DataEng-303523",
   "location": "eastus",
 
   "storageAccount": "adlsnycpayrolltarien",
