@@ -118,5 +118,15 @@ if ($script:failed) {
     exit 1
 }
 Write-Host "`nAll artifacts deployed." -ForegroundColor Green
-Write-Host "Global parameter dataflow_param_fiscalyear must still be set in the studio:"
-Write-Host "  Manage > Global parameters > New > dataflow_param_fiscalyear, type Int, value $($cfg.fiscalYearParam)"
+
+# The global parameter lives on the factory resource, not in adf/, so a deploy
+# never touches it. Report whether it is actually there rather than assuming.
+$gp = az datafactory show -g $rg -n $factory `
+    --query "globalParameters.dataflow_param_fiscalyear.value" -o tsv 2>$null
+if ($gp) {
+    Write-Host "Global parameter dataflow_param_fiscalyear = $gp" -ForegroundColor Green
+} else {
+    Write-Host "Global parameter dataflow_param_fiscalyear is NOT set." -ForegroundColor Yellow
+    Write-Host "  Studio: Manage > Global parameters > New > type Int, value $($cfg.fiscalYearParam)"
+    Write-Host "  or see the REST PUT in README.md"
+}
