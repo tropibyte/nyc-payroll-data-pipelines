@@ -1,8 +1,12 @@
 {
   "_comment": [
     "Fill these in with the names you actually create in the Azure portal, then run:",
-    "    python scripts/render_adf.py",
-    "which renders adf-templates/ -> adf/ and sql/ -> sql/rendered/.",
+    "    python scripts/build_adf.py",
+    "which regenerates adf/ and sql/rendered/ from the values below.",
+    "",
+    "resourceGroup: the Udacity lab pre-creates one and blocks creating others,",
+    "so this is not a free choice -- read it off 'az group list -o table' after",
+    "logging in as the odl_user_* lab account.",
     "",
     "storageAccount: Azure Storage account names allow ONLY lowercase letters and",
     "digits, 3-24 chars -- so the project's 'adlsnycpayroll-firstname-lastinitial'",
