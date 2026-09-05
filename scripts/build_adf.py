@@ -161,24 +161,46 @@ def linked_services():
     # No explicit "version" property here -- omitting it is what every legacy
     # linked service looks like, and a wrong literal would fail validation.
     # Confirm the portal's Version dropdown reads "Legacy" after import.
+    #
+    # Authentication, sqlAuth in config/project.json:
+    #
+    #   managedIdentity  (default) no credential in the connection string at
+    #                    all, so the factory authenticates as its own managed
+    #                    identity.  Requires the contained database user from
+    #                    sql/05_grant_adf_managed_identity.sql.  Nothing secret
+    #                    exists to leak, and it sidesteps a real bug: `az
+    #                    datafactory linked-service create` rewrites a
+    #                    SecureString password into an empty
+    #                    AzureKeyVaultSecret, after which every data flow fails
+    #                    with "SQLAuthentication is invalid. One of
+    #                    user/password is missing."
+    #
+    #   sqlLogin         classic user + password.  Deploy this one through the
+    #                    REST API (scripts/deploy_adf.ps1 does) or type the
+    #                    password into the studio -- do not rely on the CLI
+    #                    extension to carry it.
+    sql_auth = CFG.get("sqlAuth", "managedIdentity")
+    base = (
+        "Integrated Security=False;Encrypt=True;Connection Timeout=30;"
+        f"Data Source={SQL_SERVER}.database.windows.net;"
+        f"Initial Catalog={SQL_DB}"
+    )
+    type_props = {"connectionString": base}
+    if sql_auth == "sqlLogin":
+        type_props["connectionString"] = f"{base};User ID={SQL_USER}"
+        type_props["password"] = {
+            "type": "SecureString",
+            "value": "TYPE-THE-PASSWORD-IN-THE-PORTAL",
+        }
+    elif sql_auth != "managedIdentity":
+        raise SystemExit(f"sqlAuth must be managedIdentity or sqlLogin, got {sql_auth!r}")
+
     write("linkedService", LS_SQL, {
         "name": LS_SQL,
         "properties": {
             "annotations": [],
             "type": "AzureSqlDatabase",
-            "typeProperties": {
-                "connectionString": (
-                    "Integrated Security=False;Encrypt=True;"
-                    "Connection Timeout=30;"
-                    f"Data Source={SQL_SERVER}.database.windows.net;"
-                    f"Initial Catalog={SQL_DB};"
-                    f"User ID={SQL_USER}"
-                ),
-                "password": {
-                    "type": "SecureString",
-                    "value": "TYPE-THE-PASSWORD-IN-THE-PORTAL"
-                }
-            }
+            "typeProperties": type_props
         }
     })
 

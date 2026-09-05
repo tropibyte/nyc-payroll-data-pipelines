@@ -4,11 +4,7 @@
         "annotations": [],
         "type": "AzureSqlDatabase",
         "typeProperties": {
-            "connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=sql-nycpayroll-tarie-n.database.windows.net;Initial Catalog=db_nycpayroll;User ID=nycadmin",
-            "password": {
-                "type": "SecureString",
-                "value": "TYPE-THE-PASSWORD-IN-THE-PORTAL"
-            }
+            "connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=sql-nycpayroll-tarie-n.database.windows.net;Initial Catalog=db_nycpayroll"
         }
     }
 }

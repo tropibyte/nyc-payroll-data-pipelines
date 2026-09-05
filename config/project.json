@@ -32,6 +32,9 @@
   "sqlDatabase": "db_nycpayroll",
   "sqlUser": "nycadmin",
 
+  "_sqlAuth": "managedIdentity needs the contained DB user from sql/05_grant_adf_managed_identity.sql and keeps every secret out of the pipeline; sqlLogin is the classic user+password the course instructions describe.",
+  "sqlAuth": "managedIdentity",
+
   "synapseWorkspace": "syn-nycpayroll-tarie-n",
   "synapseDatabase": "udacity",
 
