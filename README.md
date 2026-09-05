@@ -80,8 +80,18 @@ password and never writes it anywhere.
 > BlobStorageEvents or SoftDelete`. `az storage account create` leaves both
 > off.
 
-Then run **`sql/01_sqldb_create_tables.sql`** in the portal:
-*SQL databases → db_nycpayroll → Query editor (preview)*.
+Then create the tables. Either paste **`sql/01_sqldb_create_tables.sql`** into
+*SQL databases → db_nycpayroll → Query editor (preview)*, or run it from here:
+
+```bash
+python scripts/run_sql.py sql/01_sqldb_create_tables.sql
+```
+
+`run_sql.py` authenticates with the Entra token from your existing `az login`
+rather than the SQL password — nothing to type, nothing to store. It needs your
+identity to be the server's Entra admin, which `provision_azure.ps1` sets up.
+The same script runs the verification queries later, and with `--synapse` it
+targets the serverless pool.
 
 ### 2. Generate the Data Factory artifacts
 
