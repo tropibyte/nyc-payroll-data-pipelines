@@ -121,17 +121,15 @@ confirm **Version** reads `Legacy`. The current (non-legacy) version of the
 Azure SQL linked service breaks mapping data flows with
 `MissingRequiredPropertyException: server is a required property`.
 
-**b. Storage authentication.** `ls_adls_nycpayroll` uses the factory's managed
-identity, so no secret lives in Git. Grant it access:
-*Storage account → Access control (IAM) → Add role assignment → **Storage Blob
-Data Contributor** → Managed identity → Data factory → your factory*.
+**b. Storage authentication.** `ls_adls_nycpayroll` ships in account-key form,
+with the key itself left as a placeholder. Open it in the studio, set
+Authentication type to **Account key**, and pick the storage account **from the
+Azure subscription** rather than pasting anything — the studio resolves the key
+through ARM, so it never has to be typed or committed.
 
-If the lab tenant blocks role assignment, use the account-key form instead —
-`build_adf.py` always writes the unused variant to
-`adf-optional/linkedService/ls_adls_nycpayroll.accountKey.json`. Either copy it
-over `adf/linkedService/ls_adls_nycpayroll.json`, or set `"adlsAuth":
-"accountKey"` in `config/project.json` and re-run the generator. Then paste the
-key from *Storage account → Access keys* into the portal.
+Managed identity is the nicer design and `build_adf.py` still writes that
+variant to `adf-optional/linkedService/ls_adls_nycpayroll.managedIdentity.json`,
+but it does not work in this lab — see below.
 
 Then **Test connection** on both, and **Publish**.
 
@@ -181,6 +179,31 @@ in `nycpayroll_2020.csv`, **1999** in `nycpayroll_2021.csv`. Both must land in
 the raw tables and neither may appear in the summary; that is the check that the
 `dataflow_param_fiscalyear` filter actually fired. The verification script tests
 it explicitly.
+
+## What the Udacity lab actually permits
+
+Measured against the live lab account rather than guessed at. The subscription
+grants two Spektra custom roles plus `Storage Blob Data Owner` on the resource
+group, which adds up to:
+
+| | |
+|---|---|
+| Create storage, SQL, Synapse, Data Factory | **yes** — `Microsoft.Storage/*`, `Microsoft.Sql/servers/*`, `Microsoft.Synapse/workspaces/*`, `Microsoft.DataFactory/factories/*` |
+| Read/write blobs as yourself | **yes** — `Storage Blob Data Owner` on the resource group |
+| Assign RBAC roles | **no** — `Microsoft.Authorization/*/read` only. `roleAssignments/write` returns `AuthorizationFailed`. |
+| Synapse dedicated SQL pool | **no** — `workspaces/sqlPools/*` is in `notActions` |
+| Synapse Spark pool | **no** — `workspaces/bigDataPools/*` is in `notActions` |
+| Custom integration runtimes | **no** — `factories/integrationruntimes/*` is in `notActions`; the built-in AutoResolve IR still runs the data flows |
+
+Two consequences drive real design choices here:
+
+1. **No role assignment means no managed identity anywhere.** Data Factory
+   reaches storage by account key, and the Synapse external data source carries
+   no credential at all, falling back to Entra pass-through as the querying
+   user — who already holds `Storage Blob Data Owner`. Both are the *only*
+   working options, not preferences.
+2. **No dedicated pool** is why the aggregate lands in `dirstaging` and Synapse
+   reads it through an external table rather than an ADF Synapse sink.
 
 ## Design notes
 

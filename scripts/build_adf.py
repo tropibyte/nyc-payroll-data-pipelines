@@ -148,6 +148,8 @@ def linked_services():
     # flip "adlsAuth" in config/project.json and re-run this script.
     d = ROOT / "adf-optional" / "linkedService"
     d.mkdir(parents=True, exist_ok=True)
+    for stale in d.glob(f"{LS_ADLS}.*.json"):
+        stale.unlink()
     (d / f"{LS_ADLS}.{alternate}.json").write_text(
         json.dumps(adls_linked_service(alternate), indent=4) + "\n", encoding="utf-8"
     )

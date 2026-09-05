@@ -68,17 +68,26 @@ if ($exists -eq 'true') {
     Write-Host "already exists, reusing." -ForegroundColor Yellow
 }
 
-# "Default to Microsoft Entra authorization in the Azure portal"
-az storage account update --name $account --resource-group $rg `
-    --default-to-oauth-authentication true --output none
+# "Default to Microsoft Entra authorization in the Azure portal" has no
+# parameter on `az storage account create/update` in CLI 2.82.  It only changes
+# which auth the portal's Storage browser defaults to -- nothing in this
+# pipeline depends on it -- so set it by hand if you want the checkbox ticked:
+#   Storage account > Settings > Configuration > Default to Microsoft Entra
+#   authorization in the Azure portal > Enabled
+Write-Host "note: set 'Default to Microsoft Entra authorization' in the portal (no CLI flag)." -ForegroundColor DarkGray
 
-# Grant the signed-in user data-plane access so --auth-mode login works.
-$upn = az ad signed-in-user show --query id -o tsv 2>$null
-$scope = az storage account show -n $account -g $rg --query id -o tsv
-if ($upn) {
-    az role assignment create --assignee-object-id $upn --assignee-principal-type User `
-        --role "Storage Blob Data Contributor" --scope $scope --output none 2>$null
-    Write-Host "granted Storage Blob Data Contributor to yourself (may take ~1 min to take effect)."
+# Data-plane access.  The Udacity lab pre-grants the odl_user account
+# "Storage Blob Data Owner" at the resource group scope, which is what makes
+# --auth-mode login work below.  It also DENIES
+# Microsoft.Authorization/roleAssignments/write, so do not try to grant roles
+# here -- that is why config/project.json uses adlsAuth = accountKey.
+$myRoles = az role assignment list --all `
+    --assignee (az ad signed-in-user show --query id -o tsv 2>$null) `
+    --query "[?contains(roleDefinitionName,'Storage Blob Data')].roleDefinitionName" -o tsv 2>$null
+if ($myRoles) {
+    Write-Host "data-plane access via: $($myRoles -join ', ')"
+} else {
+    Write-Host "WARNING: no Storage Blob Data role found; uploads may fall back to key auth." -ForegroundColor Yellow
 }
 
 Write-Host "`n== container $container + directories ==" -ForegroundColor Cyan

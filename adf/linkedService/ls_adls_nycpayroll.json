@@ -4,7 +4,11 @@
         "annotations": [],
         "type": "AzureBlobFS",
         "typeProperties": {
-            "url": "https://adlsnycpayrolltarien.dfs.core.windows.net"
+            "url": "https://adlsnycpayrolltarien.dfs.core.windows.net",
+            "accountKey": {
+                "type": "SecureString",
+                "value": "PASTE-THE-STORAGE-ACCOUNT-KEY-IN-THE-PORTAL"
+            }
         }
     }
 }
