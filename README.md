@@ -93,6 +93,31 @@ Writes `adf/` (2 linked services, 12 datasets, 6 data flows, 1 pipeline,
 1 factory file with the global parameter) and a filled-in copy of the Synapse
 DDL to `sql/rendered/`.
 
+Then create the factory and push all 22 artifacts into it:
+
+```bash
+az extension add --name datafactory
+az datafactory create -g <resource-group> --factory-name <factory> --location eastus
+pwsh ./scripts/deploy_adf.ps1
+```
+
+This takes under a minute and, more usefully, **validates the JSON** — the
+service rejects a malformed data flow script on create, so you find out now
+rather than after an hour in the studio. The ADLS account key is read into a
+local variable and injected; it is never printed and never committed.
+
+The global parameter is the one thing `az datafactory` cannot set (no
+`--global-parameters` argument in the CLI extension). Either add it in the
+studio under *Manage → Global parameters*, or PUT it directly:
+
+```bash
+az rest --method put --body @body.json \
+  --url "https://management.azure.com/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.DataFactory/factories/<factory>?api-version=2018-06-01"
+```
+
+with `{"location":"eastus","identity":{"type":"SystemAssigned"},"properties":{"globalParameters":{"dataflow_param_fiscalyear":{"type":"Int","value":2020}}}}`.
+Keep the `identity` block — a PUT without it drops the factory's managed identity.
+
 ### 3. Connect the factory to GitHub — do this *first*, not last
 
 The project instructions put Git integration at Step 9. Do it at **Step 3**
