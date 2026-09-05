@@ -56,14 +56,22 @@ def driver():
 
 
 def split_batches(text):
-    parts, cur = [], []
+    """Split on GO the way sqlcmd does -- but only on a GO that is actually
+    code. A GO inside a /* ... */ block is documentation, and treating it as a
+    separator chops the comment into fragments that then fail to parse."""
+    parts, cur, depth = [], [], 0
     for line in text.splitlines():
-        if line.strip().upper() == "GO":
+        stripped = line.strip()
+        if depth == 0 and stripped.upper() == "GO":
             if any(l.strip() for l in cur):
                 parts.append("\n".join(cur))
             cur = []
-        else:
-            cur.append(line)
+            continue
+        cur.append(line)
+        # Count block-comment nesting on this line, ignoring -- line comments.
+        code = line.split("--", 1)[0]
+        depth += code.count("/*") - code.count("*/")
+        depth = max(depth, 0)
     if any(l.strip() for l in cur):
         parts.append("\n".join(cur))
     return parts

@@ -44,7 +44,11 @@ IF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'ds_nycpayro
 GO
 
 -- 3. The external table required by the rubric.
-DROP EXTERNAL TABLE [dbo].[NYC_Payroll_Summary];
+--    DROP EXTERNAL TABLE has no IF EXISTS form, so guard it -- otherwise the
+--    first run of this script always reports a failure for a table that was
+--    never supposed to be there yet.
+IF OBJECT_ID('dbo.NYC_Payroll_Summary') IS NOT NULL
+    DROP EXTERNAL TABLE [dbo].[NYC_Payroll_Summary];
 GO
 CREATE EXTERNAL TABLE [dbo].[NYC_Payroll_Summary](
     [FiscalYear] [int]         NULL,
