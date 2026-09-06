@@ -9,8 +9,8 @@
 | `MappingDataFlow` with a union producing `TotalPaid = RegularGrossPaid + TotalOTPaid + TotalOtherPay`, sourced from Azure SQL DB tables | [`adf/dataflow/dataflow_summary.json`](../adf/dataflow/dataflow_summary.json) |
 | `MappingDataFlow` objects moving data Data Lake → Azure SQL DB, and SQL DB → staging directory + summary table | `dataflow_agency`, `dataflow_emp`, `dataflow_title`, `dataflow_payroll2020`, `dataflow_payroll2021`, `dataflow_summary` |
 | Pipeline with `ExecuteDataFlow` activities | [`adf/pipeline/pl_nyc_payroll.json`](../adf/pipeline/pl_nyc_payroll.json) — 6 activities |
-| Screenshot of a successful pipeline execution | `screenshots/16-pipeline-run-success.png`, `screenshots/17-activity-runs-success.png` |
-| Data verified in Gen2 storage, SQL DB table, Synapse external table | `screenshots/18-…`, `19-…`, `20-…`; queries in [`sql/04_verification_queries.sql`](../sql/04_verification_queries.sql) |
+| Screenshot of a successful pipeline execution | `screenshots/17-pipeline-run-success.png`, `screenshots/18-activity-runs-success.png` |
+| Data verified in Gen2 storage, SQL DB table, Synapse external table | `screenshots/20-adls-dirstaging.png`, `screenshots/19-sqldb-summary-query.png`, `screenshots/21-synapse-summary-query.png`; queries in [`sql/04_verification_queries.sql`](../sql/04_verification_queries.sql) |
 
 ## Notes for the reviewer
 
@@ -55,8 +55,10 @@ second run (`606b0f20…`, Succeeded, 7m 24s) is the one the screenshots documen
 **Verification.** The expected results were computed directly from the source
 CSVs before the pipeline existed: **25 summary rows totalling 35,709,510.43**.
 The pipeline produced 25 rows totalling 35,709,510.5 (float rounding), matching
-in both Azure SQL DB and the Synapse external table. Each payroll file also
-ships one planted out-of-range row — `FiscalYear` 1998 in the 2020 file, 1999 in
-the 2021 file — and `22-fiscalyear-filter-proof.png` shows both present in the
-raw tables and neither in the summary, which is what proves
-`dataflow_param_fiscalyear` actually fired.
+in both Azure SQL DB and the Synapse external table. The course-distributed CSVs each contain one
+out-of-range row as shipped — `FiscalYear` 1998 in `nycpayroll_2020.csv`, 1999 in
+`nycpayroll_2021.csv`. These are in the original data, not added here; the files
+under `data/` are byte-identical to the ones in the course download.
+`22-fiscalyear-filter-proof.png` shows both rows present in the raw tables and
+neither in the summary, which is what proves `dataflow_param_fiscalyear`
+actually fired.

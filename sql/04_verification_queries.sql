@@ -22,10 +22,11 @@ ORDER BY FiscalYear, TotalPaid DESC;
 SELECT COUNT(*) AS SummaryRows, ROUND(SUM(TotalPaid), 2) AS GrandTotal
 FROM dbo.NYC_Payroll_Summary;
 
--- Proof the fiscal-year filter worked.  Each payroll file ships with one
--- planted out-of-range row: FiscalYear 1998 in nycpayroll_2020.csv and 1999 in
--- nycpayroll_2021.csv.  Both must be PRESENT in the raw tables and ABSENT from
--- the summary when dataflow_param_fiscalyear = 2020.
+-- Proof the fiscal-year filter worked.  As distributed by the course, each
+-- payroll file already contains one out-of-range row: FiscalYear 1998 in
+-- nycpayroll_2020.csv and 1999 in nycpayroll_2021.csv.  Both must be PRESENT in
+-- the raw tables and ABSENT from the summary when dataflow_param_fiscalyear
+-- = 2020.
 SELECT 'raw 2020 table, FY 1998' AS Src, COUNT(*) AS [Rows]
 FROM dbo.NYC_Payroll_Data_2020 WHERE FiscalYear = 1998
 UNION ALL

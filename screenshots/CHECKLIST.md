@@ -70,8 +70,8 @@ shot under the right filename; `scripts/capture_screen.ps1` grabs a single one.
 - [x] `21-synapse-summary-query.png` — the same select against the Synapse
       external table
 - [x] `22-fiscalyear-filter-proof.png` *(optional, strong)* — the query showing
-      the planted `FiscalYear` 1998 and 1999 rows present in the raw payroll
-      tables and absent from the summary
+      the source data's own `FiscalYear` 1998 and 1999 rows present in the raw
+      payroll tables and absent from the summary
 
 ## Step 9 — GitHub
 

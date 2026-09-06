@@ -150,11 +150,16 @@ Reload the studio. All 22 objects appear in the Author pane.
 
 ### 4. Two things you must finish by hand
 
-**a. The SQL password.** Secrets are deliberately not in the repo.
-Open `ls_sqldb_nycpayroll` → type the password → **Test connection** →
-confirm **Version** reads `Legacy`. The current (non-legacy) version of the
-Azure SQL linked service breaks mapping data flows with
+**a. The SQL connection.** With the default `"sqlAuth": "managedIdentity"` there
+is no password to enter — run `sql/05_grant_adf_managed_identity.sql` once and
+the factory authenticates as itself. Confirm the studio shows **Version 1.0**
+(what the instructions call "Legacy"; the current UI labels it 1.0 against
+2.0 Recommended). Version 2.0 breaks mapping data flows with
 `MissingRequiredPropertyException: server is a required property`.
+
+If you switch to `"sqlAuth": "sqlLogin"`, deploy that linked service through
+`deploy_adf.ps1` or type the password into the studio — **not** through
+`az datafactory linked-service create`, which silently discards it.
 
 **b. Storage authentication.** `ls_adls_nycpayroll` ships in account-key form,
 with the key itself left as a placeholder. Open it in the studio, set
@@ -166,7 +171,18 @@ Managed identity is the nicer design and `build_adf.py` still writes that
 variant to `adf-optional/linkedService/ls_adls_nycpayroll.managedIdentity.json`,
 but it does not work in this lab — see below.
 
-Then **Test connection** on both, and **Publish**.
+Then **Test connection** on both.
+
+> **Do not press Publish while the factory is in Git mode.** Publish deploys the
+> *repo* over the live factory, and `adf/linkedService/ls_adls_nycpayroll.json`
+> carries a placeholder where the storage account key goes — deliberately, so no
+> secret lands in a public repository. Publishing would overwrite the working
+> connection with that placeholder and break every data flow that touches
+> storage. `deploy_adf.ps1` already put the real key in the live service. If you
+> do publish by reflex, re-run that script to restore it.
+>
+> The side effect is that no `adf_publish` branch exists. That branch only holds
+> generated ARM templates; nothing in the rubric asks for it.
 
 ### 5. Synapse
 
@@ -209,11 +225,12 @@ Verify with `sql/04_verification_queries.sql`. Expected row counts:
 Those last two numbers were computed directly from the source CSVs, so they are
 an exact check on the whole pipeline rather than a smell test.
 
-Each payroll file ships with one planted out-of-range row — `FiscalYear` **1998**
-in `nycpayroll_2020.csv`, **1999** in `nycpayroll_2021.csv`. Both must land in
-the raw tables and neither may appear in the summary; that is the check that the
-`dataflow_param_fiscalyear` filter actually fired. The verification script tests
-it explicitly.
+As distributed by the course, each payroll file already contains one
+out-of-range row — `FiscalYear` **1998** in `nycpayroll_2020.csv`, **1999** in
+`nycpayroll_2021.csv`. Nothing here modified the data; `data/` is byte-identical
+to the course download. Both rows must land in the raw tables and neither may
+appear in the summary, which is the check that the `dataflow_param_fiscalyear`
+filter actually fired. The verification script tests it explicitly.
 
 ## What the Udacity lab actually permits
 
