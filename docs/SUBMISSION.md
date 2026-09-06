@@ -26,6 +26,37 @@ reads it through a serverless external table
 (`sql/03_synapse_external_table.sql`) rather than an ADF Synapse sink. This is
 the CETAS-era approach the updated project instructions call for.
 
-**Secrets.** The SQL linked service ships with a placeholder SecureString; the
-password is entered in the Data Factory portal and stored by the service, never
-in this repository.
+**Authentication, and why it does not match the course screenshots.** The lab
+subscription denies `Microsoft.Authorization/roleAssignments/write`, which rules
+out granting any managed identity an Azure RBAC role. That forced two choices:
+
+* `ls_adls_nycpayroll` uses an **account key** rather than managed identity.
+* `ls_sqldb_nycpayroll` uses the factory's **system-assigned managed identity**
+  with no username or password at all. A contained database user
+  (`sql/05_grant_adf_managed_identity.sql`) is a *database*-level grant, not an
+  Azure role assignment, so it works despite that restriction. The linked
+  service is still Version 1.0 — the "Legacy" the instructions call for, which
+  the current studio labels 1.0 against 2.0 (Recommended).
+* The Synapse external data source carries **no credential**, falling back to
+  Entra pass-through as the querying user, who holds `Storage Blob Data Owner`
+  on the resource group.
+
+Nothing secret is stored in this repository.
+
+**Two runs appear in Monitor.** The first (`6b08e4b7…`, Failed) died in all
+three master-load activities with *"Only one valid authentication should be used
+for ls_sqldb_nycpayroll. SQLAuthentication is invalid. One of user/password is
+missing."* The cause was not the pipeline: `az datafactory linked-service
+create` rewrites a `SecureString` password into an empty `AzureKeyVaultSecret`,
+so the service stored a username with no password. Switching that linked service
+to managed identity removed the credential from the equation entirely. The
+second run (`606b0f20…`, Succeeded, 7m 24s) is the one the screenshots document.
+
+**Verification.** The expected results were computed directly from the source
+CSVs before the pipeline existed: **25 summary rows totalling 35,709,510.43**.
+The pipeline produced 25 rows totalling 35,709,510.5 (float rounding), matching
+in both Azure SQL DB and the Synapse external table. Each payroll file also
+ships one planted out-of-range row — `FiscalYear` 1998 in the 2020 file, 1999 in
+the 2021 file — and `22-fiscalyear-filter-proof.png` shows both present in the
+raw tables and neither in the summary, which is what proves
+`dataflow_param_fiscalyear` actually fired.

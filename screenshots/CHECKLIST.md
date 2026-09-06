@@ -1,75 +1,80 @@
 # Proof-of-work screenshots
 
-Save each capture in this folder using the filename given. Take them **as you
-go** — the lab session expires and the resources disappear with it.
+All captured. `scripts/capture_checklist.ps1` walks this list and saves each
+shot under the right filename; `scripts/capture_screen.ps1` grabs a single one.
 
 ## Step 1 — infrastructure
 
-- [ ] `01-adls-dirpayrollfiles.png` — Storage browser showing `dirpayrollfiles`
+- [x] `01-adls-dirpayrollfiles.png` — Storage browser showing `dirpayrollfiles`
       with AgencyMaster.csv, EmpMaster.csv, TitleMaster.csv, nycpayroll_2021.csv
-- [ ] `02-adls-dirhistoryfiles.png` — `dirhistoryfiles` with nycpayroll_2020.csv
-- [ ] `03-sqldb-tables.png` — Query editor result of the
+- [x] `02-adls-dirhistoryfiles.png` — `dirhistoryfiles` with nycpayroll_2020.csv
+- [x] `03-sqldb-tables.png` — Query editor result of the
       `INFORMATION_SCHEMA.TABLES` select at the end of
       `sql/01_sqldb_create_tables.sql` (six `NYC_Payroll*` tables)
-- [ ] `04-synapse-external-table.png` — Synapse `udacity` database, object
+- [x] `04-synapse-external-table.png` — Synapse `udacity` database, object
       explorer showing `dbo.NYC_Payroll_Summary` under External Tables
 
 ## Step 2 — linked services
 
-- [ ] `05-linkedservices-list.png` — Manage → Linked services, both entries
+- [x] `05-linkedservices-list.png` — Manage → Linked services, both entries
       listed after successful creation (this is the capture the step asks for)
-- [ ] `06-linkedservice-sql-legacy.png` — `ls_sqldb_nycpayroll` edit blade,
-      Version = **Legacy**, connection test successful
-- [ ] `07-linkedservice-adls.png` — `ls_adls_nycpayroll`, connection test
-      successful
+- [x] `06-linkedservice-sql-legacy.png` — `ls_sqldb_nycpayroll` edit blade.
+      The studio labels the versions **1.0** and **2.0 (Recommended)**; 1.0 is
+      the "Legacy" the project instructions mean, and it is the one selected.
+      Authentication is System-assigned managed identity, so there is no
+      password field -- see docs/SUBMISSION.md for why.
+- [x] `07-linkedservice-adls.png` — `ls_adls_nycpayroll`, account-key auth
 
 "Save configs of Linked Services" is already satisfied by
 `adf/linkedService/*.json` in this repo.
 
 ## Step 3 — datasets
 
-- [ ] `08-datasets-list.png` — Author pane with all 12 datasets expanded
-- [ ] `09-dataset-preview.png` — Preview data on `ds_adls_payroll2021` showing
+- [x] `08-datasets-list.png` — Author pane with all 12 datasets expanded
+- [x] `09-dataset-preview.png` — Preview data on `ds_adls_payroll2021` showing
       parsed rows
 
 ## Step 4 — load data flows
 
-- [ ] `10-dataflows-list.png` — Author pane with all 6 data flows
-- [ ] `11-dataflow-payroll2020.png` — canvas: source → cast → sink
+- [x] `10-dataflows-list.png` — Author pane with all 6 data flows
+- [x] `11-dataflow-payroll2020.png` — canvas: source → cast → sink
 
 ## Step 5 — aggregate data flow
 
-- [ ] `12-dataflow-summary-canvas.png` — full canvas: two sources, two selects,
+- [x] `12-dataflow-summary-canvas.png` — full canvas: two sources, two selects,
       union, filter, derived column, aggregate, select, two sinks
-- [ ] `13-dataflow-summary-filter.png` — the Filter expression
+- [x] `13-dataflow-summary-filter.png` — the Filter expression
       `toInteger(FiscalYear) >= $dataflow_param_fiscalyear`
-- [ ] `14-dataflow-summary-aggregate.png` — group by + `sum(TotalPaid)`
+- [x] `14-dataflow-summary-aggregate.png` — Aggregate settings, group by
+      `FiscalYear`, `AgencyName`
+- [x] `14b-dataflow-summary-aggregates-expression.png` — the Aggregates tab of
+      the same step, showing `TotalPaid = sum(TotalPaid)`
 
 ## Steps 6–7 — pipeline and run
 
-- [ ] `15-pipeline-canvas.png` — `pl_nyc_payroll` showing the 3 → 2 → 1
+- [x] `15-pipeline-canvas.png` — `pl_nyc_payroll` showing the 3 → 2 → 1
       dependency fan
-- [ ] `16-global-parameter.png` — Manage → Global parameters →
+- [x] `16-global-parameter.png` — Manage → Global parameters →
       `dataflow_param_fiscalyear`, and the Execute Data Flow activity binding
       `@pipeline().globalParameters.dataflow_param_fiscalyear`
-- [ ] `17-pipeline-run-success.png` — **Monitor → Pipeline runs**, status
+- [x] `17-pipeline-run-success.png` — **Monitor → Pipeline runs**, status
       Succeeded
-- [ ] `18-activity-runs-success.png` — the run's activity list, all six data
+- [x] `18-activity-runs-success.png` — the run's activity list, all six data
       flow activities green
 
 ## Step 8 — data verification
 
-- [ ] `19-sqldb-summary-query.png` — `SELECT * FROM dbo.NYC_Payroll_Summary`
-- [ ] `20-adls-dirstaging.png` — Storage browser showing the files the pipeline
+- [x] `19-sqldb-summary-query.png` — `SELECT * FROM dbo.NYC_Payroll_Summary`
+- [x] `20-adls-dirstaging.png` — Storage browser showing the files the pipeline
       wrote into `dirstaging`
-- [ ] `21-synapse-summary-query.png` — the same select against the Synapse
+- [x] `21-synapse-summary-query.png` — the same select against the Synapse
       external table
-- [ ] `22-fiscalyear-filter-proof.png` *(optional, strong)* — the query showing
+- [x] `22-fiscalyear-filter-proof.png` *(optional, strong)* — the query showing
       the planted `FiscalYear` 1998 and 1999 rows present in the raw payroll
       tables and absent from the summary
 
 ## Step 9 — GitHub
 
-- [ ] `23-git-configuration.png` — Manage → Git configuration, repo and
+- [x] `23-git-configuration.png` — Manage → Git configuration, repo and
       root folder `/adf`
-- [ ] `24-github-repo.png` — the repo showing the published `adf/` tree
+- [x] `24-github-repo.png` — the repo showing the published `adf/` tree
